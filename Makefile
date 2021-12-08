@@ -26,3 +26,12 @@ init:
 		--tty \
 		--volume ${PWD}/aws:/aws \
 		hashicorp/terraform:1.0.11 -chdir=${TF_PATH} init
+
+.PHONY: destroy
+destroy:
+	docker run \
+		--env-file ${PWD}/env/credentials.env \
+		--interactive \
+		--tty \
+		--volume ${PWD}/aws:/aws \
+		hashicorp/terraform:1.0.11 -chdir=${TF_PATH} destroy
