@@ -1,5 +1,6 @@
 import logging
 import sys
+from urllib.parse import unquote_plus
 
 import boto3
 from botocore.exceptions import ClientError
@@ -49,9 +50,10 @@ def pack_message(msg_path, msg_body, msg_line):
     }
 
 
-def read_file(s3, bucket, filepath):
+def read_file(bucket, filepath):
+    s3 = boto3.client("s3")
     data = s3.get_object(Bucket=bucket, Key=filepath)
-    contents = data['Body'].readlines()
+    contents = data['Body']
     return contents
 
 
@@ -68,18 +70,24 @@ def get_queue(name):
 
 
 def pack_file(bucket, filepath, queue_name):
-    lines = read_file(bucket, filepath)
+    contents = read_file(bucket, filepath)
     queue = get_queue(queue_name)
 
-    line = 0
+    index = 0
     batch_size = 10
-    while line < len(lines):
-        messages = [
-            pack_message(__file__, lines[index], index)
-            for index in range(line, min(line + batch_size, len(lines)))
-        ]
+    messages = []
+    for line in contents.iter_lines():
+        messages.append(pack_message(__file__, line, index))
+        index += 1
 
-        line = line + batch_size
+        if index == batch_size:
+            send_messages(queue, messages)
+            index = 0
+            messages = []
+            print(".", end="")
+            sys.stdout.flush()
+
+    if len(messages) != 0:
         send_messages(queue, messages)
         print(".", end="")
         sys.stdout.flush()
@@ -90,7 +98,5 @@ def lambda_handler(event, context):
 
     for lambda_event in event['Records']:
         bucket = lambda_event['s3']['bucket']['name']
-        key = urllib.parse.unquote_plus(
-            lambda_event['s3']['object']['key'], encoding='utf-8'
-        )
-        pack_file(bucket, filepath, queue_name)
+        key = unquote_plus(lambda_event['s3']['object']['key'], encoding='utf-8')
+        pack_file(bucket, key, queue_name)
