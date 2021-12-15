@@ -1,8 +1,8 @@
 SHELL:=/bin/bash
-repo_name=functions-2152
-image_name=functions
-account=343221145296
-region=sa-east-1
+REPO=functions-2152
+IMAGE=functions
+ACCOUNT=343221145296
+REGION=sa-east-1
 
 .PHONY: apply
 apply:
@@ -43,13 +43,13 @@ destroy:
 .PHONY: lambda-release
 lambda-release:
 	docker build functions --tag functions
-	aws ecr get-login-password --region ${region} \
+	aws ecr get-login-password --region ${REGION} \
 		| docker login \
 			--username AWS \
 			--password-stdin \
-			${account}.dkr.ecr.${region}.amazonaws.com
-	docker tag ${image_name}:latest ${account}.dkr.ecr.${region}.amazonaws.com/${repo_name}:latest
-	docker push ${account}.dkr.ecr.${region}.amazonaws.com/${repo_name}:latest
+			${ACCOUNT}.dkr.ecr.${REGION}.amazonaws.com
+	docker tag ${IMAGE}:latest ${ACCOUNT}.dkr.ecr.${REGION}.amazonaws.com/${REPO}:latest
+	docker push ${ACCOUNT}.dkr.ecr.${REGION}.amazonaws.com/${REPO}:latest
 	aws lambda update-function-code \
-		--function-name landing_to_sqs-2152 \
-		--image-uri ${account}.dkr.ecr.${region}.amazonaws.com/${repo_name}:latest
+		--function-name ${FUNCTION} \
+		--image-uri ${ACCOUNT}.dkr.ecr.${REGION}.amazonaws.com/${REPO}:latest
