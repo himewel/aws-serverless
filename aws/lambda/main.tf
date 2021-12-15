@@ -43,11 +43,12 @@ resource "aws_iam_role_policy" "logs_policy" {
       },
       {
         Action = [
-          "sqs:ChangeMessageVisibility",
-          "sqs:DeleteMessage",
           "sqs:GetQueueAttributes",
+          "sqs:SendMessage",
           "sqs:ReceiveMessage",
-          "sqs:SendMessage"
+          "sqs:DeleteMessage",
+          "sqs:DeleteMessageBatch",
+          "sqs:GetQueueUrl"
         ]
         Effect: "Allow"
         Resource: "arn:aws:sqs:*"
