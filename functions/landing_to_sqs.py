@@ -13,7 +13,7 @@ def send_messages(queue, messages):
         entries = [
             {
                 "Id": str(ind),
-                "MessageBody": msg["body"],
+                "MessageBody": str(msg["body"], "utf-8"),
                 "MessageAttributes": msg["attributes"],
             }
             for ind, msg in enumerate(messages)
@@ -53,7 +53,7 @@ def pack_message(msg_path, msg_body, msg_line):
 def read_file(bucket, filepath):
     s3 = boto3.client("s3")
     data = s3.get_object(Bucket=bucket, Key=filepath)
-    contents = data['Body']
+    contents = data["Body"]
     return contents
 
 
@@ -77,26 +77,24 @@ def pack_file(bucket, filepath, queue_name):
     batch_size = 10
     messages = []
     for line in contents.iter_lines():
-        messages.append(pack_message(__file__, line, index))
+        messages.append(pack_message(filepath, line, index + 1))
         index += 1
 
         if index == batch_size:
+            logging.debug(f"Sending new batch with {len(messages)} messages")
             send_messages(queue, messages)
             index = 0
             messages = []
-            print(".", end="")
-            sys.stdout.flush()
 
     if len(messages) != 0:
+        logging.debug(f"Sending new batch with {len(messages)} messages")
         send_messages(queue, messages)
-        print(".", end="")
-        sys.stdout.flush()
 
 
 def lambda_handler(event, context):
     queue_name = "landing-queue-2152"
 
-    for lambda_event in event['Records']:
-        bucket = lambda_event['s3']['bucket']['name']
-        key = unquote_plus(lambda_event['s3']['object']['key'], encoding='utf-8')
+    for lambda_event in event["Records"]:
+        bucket = lambda_event["s3"]["bucket"]["name"]
+        key = unquote_plus(lambda_event["s3"]["object"]["key"], encoding="utf-8")
         pack_file(bucket, key, queue_name)
