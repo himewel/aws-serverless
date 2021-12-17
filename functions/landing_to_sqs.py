@@ -3,6 +3,8 @@ import sys
 from urllib.parse import unquote_plus
 
 import boto3
+import csv
+import json
 from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
@@ -13,7 +15,7 @@ def send_messages(queue, messages):
         entries = [
             {
                 "Id": str(ind),
-                "MessageBody": str(msg["body"], "utf-8"),
+                "MessageBody": msg["body"],
                 "MessageAttributes": msg["attributes"],
             }
             for ind, msg in enumerate(messages)
@@ -40,10 +42,14 @@ def send_messages(queue, messages):
         return response
 
 
-def pack_message(msg_path, msg_body, msg_line):
+def pack_message(msg_path, msg_body, msg_line, header):
+    csv_body = list(csv.reader([str(msg_body, "utf-8")]))[0]
+    body = dict([(key, value) for key, value in zip(header, csv_body)])
+
     return {
-        "body": msg_body,
+        "body": json.dumps(body),
         "attributes": {
+            "domain": {"StringValue": msg_path.split("/")[0], "DataType": "String"},
             "path": {"StringValue": msg_path, "DataType": "String"},
             "line": {"StringValue": str(msg_line), "DataType": "String"},
         },
@@ -73,21 +79,29 @@ def pack_file(bucket, filepath, queue_name):
     contents = read_file(bucket, filepath)
     queue = get_queue(queue_name)
 
+    is_header = True
+    line_number = 0
     index = 0
     batch_size = 10
     messages = []
     for line in contents.iter_lines():
-        messages.append(pack_message(filepath, line, index + 1))
+        if is_header:
+            header = list(csv.reader([str(line, "utf-8")]))[0]
+            is_header = False
+            continue
+
         index += 1
+        line_number += 1
+        messages.append(pack_message(filepath, line, line_number, header))
 
         if index == batch_size:
-            logging.debug(f"Sending new batch with {len(messages)} messages")
+            logging.info(f"Sending new batch with {len(messages)} messages")
             send_messages(queue, messages)
             index = 0
             messages = []
 
     if len(messages) != 0:
-        logging.debug(f"Sending new batch with {len(messages)} messages")
+        logging.info(f"Sending new batch with {len(messages)} messages")
         send_messages(queue, messages)
 
 
