@@ -1,5 +1,12 @@
 # AWS Serverless Challenge
 
+<p>
+<img alt="Docker" src="https://img.shields.io/badge/docker-%230db7ed.svg?&style=for-the-badge&logo=docker&logoColor=white"/>
+<img alt="AWS" src="https://img.shields.io/badge/amazonaws-%23232F3E.svg?&style=for-the-badge&logo=amazonaws&logoColor=white"/>
+<img alt="S3" src="https://img.shields.io/badge/amazons3-%23569A31.svg?&style=for-the-badge&logo=amazons3&logoColor=white"/>
+<img alt="Terraform" src="https://img.shields.io/badge/terraform-%23623CE4.svg?&style=for-the-badge&logo=terraform&logoColor=white"/>
+</p>
+
 ![data-flow](docs/data-flow.png)
 
 As default values, all the buckets in this project has the suffix "2152" to make then unique in the project. Also, a `./env/credentials.env` file with the aws credentials is expected as default. You can change it in the Makefile by changing the docker commands to provide your credentials in the way you want. First, create the backend bucket where terraform will store and update the infrastructure state:
