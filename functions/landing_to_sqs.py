@@ -1,5 +1,6 @@
 import logging
 import sys
+from datetime import datetime
 from urllib.parse import unquote_plus
 
 import boto3
@@ -42,14 +43,16 @@ def send_messages(queue, messages):
         return response
 
 
-def pack_message(msg_path, msg_body, msg_line, header):
+def pack_message(bucket, msg_path, msg_body, msg_line, header):
     csv_body = list(csv.reader([str(msg_body, "utf-8")]))[0]
     body = dict([(key, value) for key, value in zip(header, csv_body)])
 
     return {
         "body": json.dumps(body),
         "attributes": {
+            "bucket": {"StringValue": bucket, "DataType": "String"},
             "domain": {"StringValue": msg_path.split("/")[0], "DataType": "String"},
+            "date": {"StringValue": str(datetime.now()), "DataType": "String"},
             "path": {"StringValue": msg_path, "DataType": "String"},
             "line": {"StringValue": str(msg_line), "DataType": "String"},
         },
@@ -92,7 +95,7 @@ def pack_file(bucket, filepath, queue_name):
 
         index += 1
         line_number += 1
-        messages.append(pack_message(filepath, line, line_number, header))
+        messages.append(pack_message(bucket, filepath, line, line_number, header))
 
         if index == batch_size:
             logging.info(f"Sending new batch with {len(messages)} messages")
