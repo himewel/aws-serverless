@@ -11,7 +11,7 @@ apply:
 		--interactive \
 		--tty \
 		--volume ${PWD}/aws:/aws \
-		hashicorp/terraform:1.0.11 -chdir=${TF_PATH} apply
+		hashicorp/terraform:1.0.11 -chdir=${TF_PATH} apply -auto-approve
 
 .PHONY: plan
 plan:
