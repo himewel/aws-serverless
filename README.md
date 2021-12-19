@@ -54,3 +54,13 @@ As a wrapper to this commands, you can just run:
 ```shell
 make lambda-release FUNCTION="your-function-name"
 ```
+
+# Schemas in DynamoDB
+
+The folder `./schemas` stores a json file with a template of schema to be readed in the lambda functions. To create register a new schema in the DynamoDB schemas table, run the following:
+
+```shell
+aws dynamodb put-item \
+    --table ingestion-schema-2152 \
+    --item file://schemas/north.json
+```
