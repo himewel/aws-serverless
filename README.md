@@ -57,10 +57,19 @@ make lambda-release FUNCTION="your-function-name"
 
 # Schemas in DynamoDB
 
-The folder `./schemas` stores a json file with a template of schema to be readed in the lambda functions. To create register a new schema in the DynamoDB schemas table, run the following:
+The folder `./schemas` stores a JSON file with a template of schema to be readed in the lambda functions. To create register a new schema in the DynamoDB schemas table, run the following:
 
 ```shell
 aws dynamodb put-item \
     --table ingestion-schema-2152 \
     --item file://schemas/north.json
 ```
+
+The following fields are expected at the JSON file:
+- **id**: unique ID for the schema item;
+- **domain**: field at the SQS messages that identifies the source folder of this message at the landing layer;
+- **mapping**: a list of source/destination column names and dtypes at the final structure in raw layer;
+- **destination**: path in raw/trusted layer where the data will be writed;
+- **column_keys**: list of columns representing a unique row in the destination table;
+- **date_keys**: list of date columns to deduplicate new and old data;
+- **partition_columns**: columns to partition by the final table;
