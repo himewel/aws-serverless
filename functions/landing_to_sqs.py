@@ -8,6 +8,7 @@ import csv
 import json
 from botocore.exceptions import ClientError
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 

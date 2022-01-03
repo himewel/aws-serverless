@@ -48,7 +48,18 @@ resource "aws_iam_role_policy" "logs_policy" {
         ]
         Effect: "Allow"
         Resource: "arn:aws:sqs:*"
-      }
+      },
+      {
+          Effect: "Allow"
+          Action: [
+              "kinesis:DescribeStream",
+              "kinesis:GetShardIterator",
+              "kinesis:GetRecords",
+              "kinesis:ListShards",
+              "kinesis:PutRecord"
+          ]
+          Resource: "arn:aws:kinesis:*"
+      },
     ]
   })
 }

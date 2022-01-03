@@ -29,8 +29,8 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
   }
 }
 
-resource "aws_lambda_function" "sqs_to_raw_lambda" {
-  function_name = "sqs_to_raw-2152"
+resource "aws_lambda_function" "sqs_to_ingested_lambda" {
+  function_name = "sqs_to_ingested-2152"
   depends_on    = [aws_iam_role_policy.logs_policy]
   image_uri     = "343221145296.dkr.ecr.sa-east-1.amazonaws.com/functions-2152:latest"
   package_type  = "Image"
@@ -38,11 +38,11 @@ resource "aws_lambda_function" "sqs_to_raw_lambda" {
   timeout       = 120
 
   image_config {
-    command = ["sqs_to_raw.lambda_handler"]
+    command = ["sqs_to_ingested.lambda_handler"]
   }
 }
 
 resource "aws_lambda_event_source_mapping" "sqs_notification" {
   event_source_arn = "arn:aws:sqs:sa-east-1:343221145296:landing-queue-2152"
-  function_name    = aws_lambda_function.sqs_to_raw_lambda.arn
+  function_name    = aws_lambda_function.sqs_to_ingested_lambda.arn
 }
