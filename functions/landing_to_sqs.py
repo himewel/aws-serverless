@@ -23,20 +23,7 @@ def send_messages(queue, messages):
             for ind, msg in enumerate(messages)
         ]
         response = queue.send_messages(Entries=entries)
-        if "Successful" in response:
-            for msg_meta in response["Successful"]:
-                logger.info(
-                    "Message sent: %s: %s",
-                    msg_meta["MessageId"],
-                    messages[int(msg_meta["Id"])]["body"],
-                )
-        if "Failed" in response:
-            for msg_meta in response["Failed"]:
-                logger.warning(
-                    "Failed to send: %s: %s",
-                    msg_meta["MessageId"],
-                    messages[int(msg_meta["Id"])]["body"],
-                )
+        print(response)
     except ClientError as error:
         logger.exception("Send messages failed to queue: %s", queue)
         raise error
