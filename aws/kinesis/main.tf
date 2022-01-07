@@ -24,6 +24,7 @@ resource "aws_kinesis_firehose_delivery_stream" "ingested_firehose" {
     bucket_arn = aws_s3_bucket.ingested_bucket.arn
     buffer_size        = 128
     buffer_interval    = 60
-    compression_format = "Snappy"
+    prefix = "weather_measures/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/"
+    error_output_prefix = "error=!{firehose:error-output-type}/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/"
   }
 }

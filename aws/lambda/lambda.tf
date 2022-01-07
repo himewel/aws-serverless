@@ -4,11 +4,16 @@ resource "aws_lambda_function" "landing_to_sqs_lambda" {
   image_uri     = "343221145296.dkr.ecr.sa-east-1.amazonaws.com/functions-2152:latest"
   package_type  = "Image"
   role          = aws_iam_role.lambda_role.arn
-  timeout       = 120
+  timeout       = 900
 
   image_config {
     command = ["landing_to_sqs.lambda_handler"]
   }
+}
+
+resource "aws_lambda_function_event_invoke_config" "landing_to_sqs_config" {
+  function_name                = aws_lambda_function.landing_to_sqs_lambda.function_name
+  maximum_retry_attempts       = 0
 }
 
 resource "aws_lambda_permission" "allow_bucket_lambda_alias" {
